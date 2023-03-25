@@ -1,0 +1,29 @@
+--1 How many lectures on average were observed each month
+select month(t.published_date) as Month, round(sum(t.views)/count(t.views),2) as Number_of_views
+from keggel.ted_talks_data t
+group by month(t.published_date)
+order by 2
+
+--2 Top 5 most viewed lectures
+select top 5 t.title,sum(t.views),sum(t.likes)
+from keggel.ted_talks_data t 
+group by t.title
+order by sum(t.views) desc,sum(t.likes) desc
+
+--3 Number of lectures per lecturer
+select t.speaker, count(*)
+from keggel.ted_talks_data t
+group by t.speaker
+order by 2 desc
+
+--4 For each lecturer to rate the lectures according to the number of views
+select distinct(t.speaker), t.title,t.views, row_number() over (partition by t.speaker 
+order by t.views desc) as number
+from keggel.ted_talks_data t 
+where t.speaker is not null
+
+--5 For each lecture how many of the people who watched it also liked it
+select t.title, cast(round(cast(t.likes as float)/cast (t.views as float)*100,4) as varchar)+'%' as kpi
+from keggel.ted_talks_data t
+group by t.title, cast(t.likes as float) / cast (t.views as float)*100
+order by 2 desc
